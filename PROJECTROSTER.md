@@ -10,6 +10,7 @@
 
 - Determine project wide rules
 - Decide on subproject inclusion
+- Assign *Repository Maintainer* roles
 
 ### Current Roster
 
