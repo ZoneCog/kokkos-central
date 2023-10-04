@@ -8,6 +8,9 @@
 
 ### Role
 
+- Determine project wide rules
+- Decide on subproject inclusion
+
 ### Current Roster
 
 - Damien Lebrun-Grandie -- GitHub handle: [dalg24](https://github.com/dalg24)
