@@ -1,0 +1,33 @@
+# Team Roles
+- *Project Leads*: form the Technical Steering Committee of the Kokkos Project.
+- *Repository Maintainers*: are administrators of Kokkos subproject repositories
+- *Team Members*: Regular contributors to Kokkos subprojects
+- *Collaborators*: Irregular contributors to Kokkos subprojects
+
+# Project Leads
+
+### Role
+
+### Current Roster
+
+- Damien Lebrun-Grandie [dalg24](https://github.com/dalg24)
+- Christian R. Trott [crtrott](https://github.com/crtrott)
+- Siva Rajamanickam [srajama1](https://github.com/srajama1)
+- Luc Berger-Vergiat [lucbv](https://github.com/lucbv)
+
+# Repository Maintainers
+
+### Role
+
+- Lead subprojects in Kokkos
+- Control who has merge rights for their respective repository
+- Determine *Team Members* of their respecitve repository
+- Organize release process for their subproject
+
+# Team Members
+
+### Role
+
+- Develop code
+- Review Pull Requests
+- Maintain documentation
