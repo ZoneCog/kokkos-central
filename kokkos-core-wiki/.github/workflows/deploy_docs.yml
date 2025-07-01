@@ -1,0 +1,44 @@
+name: Build and deploy docs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      docs-directory: /home/runner/work/kokkos-core-wiki/kokkos-core-wiki/docs
+    container:
+      image: python:3.12
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - run: pip install -r build_requirements.txt
+      - run: apt update && apt --yes --no-install-recommends install graphviz
+      - name: Build documentation
+        working-directory: ${{ env.docs-directory }}
+        run: |
+          make html
+      - name: Updload documentation as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          name: github-pages
+          path: ${{ env.docs-directory }}/generated_docs
+
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
