@@ -192,6 +192,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
 
     set(${Tag}_SOURCES1B)
     set(${Tag}_TESTNAMES1B
+        HyperGraph
         MDRange_a
         MDRange_b
         MDRange_c
