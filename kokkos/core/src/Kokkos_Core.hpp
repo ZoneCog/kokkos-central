@@ -348,9 +348,11 @@ std::vector<ExecSpace> partition_space(ExecSpace const& base_instance,
 
 #include <Kokkos_Crs.hpp>
 #include <Kokkos_WorkGraphPolicy.hpp>
+#include <Kokkos_HyperGraph.hpp>
+#include <Kokkos_HyperGraph_ModuleMapper.hpp>
 // Including this in Kokkos_Parallel_Reduce.hpp led to a circular dependency
 // because Kokkos::Sum is used in Kokkos_Combined_Reducer.hpp and the default.
-// The real answer is to finally break up Kokkos_Parallel_Reduce.hpp into
+// The real answer is to finally break up Kokkos_Partial_Reduce.hpp into
 // smaller parts...
 #include <impl/Kokkos_Combined_Reducer.hpp>
 // Yet another workaround to deal with circular dependency issues because the
