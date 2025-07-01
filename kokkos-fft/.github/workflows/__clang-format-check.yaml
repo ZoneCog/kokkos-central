@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: (C) The kokkos-fft development team, see COPYRIGHT.md file
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
+
+# This job verifies the code formatting of C++ source files using the clang-format lint action.
+# If any formatting inconsistencies are found compared to the expected style, the job will fail 
+# and the differences will be displayed in the job log.
+# See https://github.com/DoozyX/clang-format-lint-action for more details.
+
+name: clang-format check
+
+on:
+  workflow_call:
+
+permissions: read-all
+
+jobs:
+  clang-formatting-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+    - uses: DoozyX/clang-format-lint-action@bcb4eb2cb0d707ee4f3e5cc3b456eb075f12cf73  # v0.20
+      with:
+        source: 'common/ fft/ examples/ install_test/ testing/'
+        exclude: ''
+        extensions: 'hpp,cpp'
+        clangFormatVersion: 17

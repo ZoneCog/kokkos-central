@@ -1,0 +1,13 @@
+# object files
+*.o
+*.a
+*.x
+
+# module files
+*.mod
+
+# vscode configuration
+.vscode/*
+
+# output files
+*.out

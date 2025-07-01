@@ -1,0 +1,13 @@
+# Python Virtual Environment
+/venv
+.venv/
+# PyCharm files
+/.idea
+# Rendered html files
+/html
+# Doc trees
+/doctrees
+# Generated docs
+/docs/generated_docs
+
+__pycache__/

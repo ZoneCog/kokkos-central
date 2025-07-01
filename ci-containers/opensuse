@@ -1,0 +1,13 @@
+FROM opensuse/tumbleweed:latest
+
+RUN zypper dup -y && \
+    zypper install -y \
+      make cmake git gcc-c++ ccache vim clang llvm wget sudo curl ninja zstd libomp-devel hwloc-devel shadow && \
+    zypper clean
+
+RUN groupadd -r wheel
+RUN useradd -m -G wheel -u 1001 kokkos
+RUN echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+USER kokkos
+ENV CCACHE_MAXSIZE=250M
+WORKDIR /home/kokkos

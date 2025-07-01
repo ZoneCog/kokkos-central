@@ -1,0 +1,13 @@
+{
+  "backend": "stdfile",
+  "backends": {
+    "stdfile": {
+      "config": "file_test.cfg",
+      "file": "checkpoint.data"
+    }
+  },
+  "filter": {
+    "type": "iteration",
+    "interval": 10
+  }
+}

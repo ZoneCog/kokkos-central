@@ -1,0 +1,30 @@
+name: Docs build
+
+# only run most recent workflow in branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+      - cmake/**
+      - src/**
+      - perf_tests/**
+      - unit_tests/**
+    types: [ opened, reopened, synchronize ]
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MDBOOK_VERSION: 0.4.36
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sphinx
+        run: |
+          pip install -U -r docs/requirements.txt
+      - name: Build with sphinx
+        run: make -C docs html
