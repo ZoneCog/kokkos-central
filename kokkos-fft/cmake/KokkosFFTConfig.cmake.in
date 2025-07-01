@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: (C) The kokkos-fft development team, see COPYRIGHT.md file
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
+
+@PACKAGE_INIT@
+
+# Set and Check must go first else macro might be redefined by find_dependency ...
+set_and_check(KokkosFFT_TARGET_FILE "${PACKAGE_PREFIX_DIR}/@LIBDIR@/@KokkosFFT_EXPORT_TARGET@.cmake")
+
+include(CMakeFindDependencyMacro)
+list(INSERT CMAKE_MODULE_PATH 0 "${PACKAGE_PREFIX_DIR}/@LIBDIR@")
+find_dependency(Kokkos)
+
+if(@KokkosFFT_ENABLE_CUFFT@)
+  find_dependency(CUDAToolkit COMPONENTS cufft)
+endif()
+
+if(@KokkosFFT_ENABLE_ROCFFT@)
+  find_dependency(rocfft)
+endif()
+
+if(@KokkosFFT_ENABLE_HIPFFT@)
+  find_dependency(hipfft)
+endif()
+
+if(@KokkosFFT_ENABLE_ONEMKL@)
+  find_dependency(MKL COMPONENTS SYCL)
+endif()
+
+if(@KokkosFFT_ENABLE_FFTW@)
+  find_dependency(FFTW MODULE)
+endif()
+
+include(${KokkosFFT_TARGET_FILE})
+
+check_required_components(KokkosFFT)
