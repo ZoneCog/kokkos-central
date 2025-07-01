@@ -1,0 +1,120 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron:  '0 5 * * FRI'
+
+concurrency:
+  group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}-linux-x64
+  cancel-in-progress: ${{github.event_name == 'pull_request'}}
+
+jobs:
+  CI:
+    strategy:
+        matrix:
+          config:
+            - {dockerfile: 'fedora',   tag: 'latest-amd64'}
+            - {dockerfile: 'fedora',   tag: 'latest-arm64', arm: 'true'}
+            - {dockerfile: 'fedora',   tag: 'rawhide-amd64',  build_args: 'TAG=rawhide',  continue-on-error: 'true'}
+            - {dockerfile: 'fedora',   tag: 'rawhide-arm64',  build_args: 'TAG=rawhide',  continue-on-error: 'true', arm: 'true'}
+            - {dockerfile: 'ubuntu',   tag: 'latest-amd64'}
+            - {dockerfile: 'ubuntu',   tag: 'latest-arm64', arm: 'true'}
+            - {dockerfile: 'ubuntu',   tag: 'rolling',  build_args: 'TAG=rolling'}
+            - {dockerfile: 'ubuntu',   tag: 'devel',    build_args: 'TAG=devel',    continue-on-error: 'true'}
+            - {dockerfile: 'ubuntu',   tag: 'intel',    build_args: 'TAG=22.04,INTEL=yes', cmake_args: '-DCMAKE_CXX_COMPILER=icpx -DCMAKE_CXX_FLAGS=-fp-model=precise', continue-on-error: 'true'}
+            - {dockerfile: 'opensuse', tag: 'latest'}
+    continue-on-error: ${{ matrix.config.continue-on-error == 'true' }}
+    env:
+      docker-tag: ghcr.io/kokkos/ci-containers/${{ matrix.config.dockerfile }}:${{ matrix.config.tag }}
+    runs-on: ${{ matrix.config.arm == 'true' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        if: github.repository_owner == 'kokkos' && ( github.event_name == 'push' ||  github.event_name == 'schedule' )
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Convert build_args
+        id: build_args
+        run: |
+          echo "args<<EOF" >> $GITHUB_OUTPUT
+          echo ${{ matrix.config.build_args }} | sed 's/,/\n/g' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Free Disk space
+        shell: bash
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+      - name: Build new image and Load it into Docker for testing
+        uses: docker/build-push-action@v6
+        with:
+          tags: ${{ env.docker-tag }}
+          file: ${{ matrix.config.dockerfile }}
+          build-args: ${{ steps.build_args.outputs.args }}
+          pull: true
+          push: false
+          load: true
+      - name: Checkout kokkos
+        uses: actions/checkout@v4
+        with:
+          repository: kokkos/kokkos
+          ref: develop
+          path: kokkos
+      - name: Build and Test Kokkos using updated image
+        run: |
+          docker run -t --rm -v ${{ github.workspace }}/kokkos:/kokkos -w /kokkos ${{ env.docker-tag }} \
+            sh -c \
+              "cmake -B builddir \
+                ${{ matrix.config.cmake_args }} \
+                -DKokkos_ENABLE_HWLOC=ON \
+                -DKokkos_ENABLE_BENCHMARKS=ON \
+                -DKokkos_ENABLE_EXAMPLES=ON \
+                -DKokkos_ENABLE_TESTS=ON \
+                -DKokkos_ENABLE_SERIAL=ON \
+                -DKokkos_ENABLE_OPENMP=ON && \
+              cmake --build builddir --parallel 2 && \
+              ctest --test-dir builddir --output-on-failure"
+      - name: Push the image into GitHub Container Registry
+        uses: docker/build-push-action@v6
+        with:
+          tags: ${{ env.docker-tag }}
+          file: ${{ matrix.config.dockerfile }}
+          build-args: ${{ steps.build_args.outputs.args }}
+          push: ${{ github.repository_owner == 'kokkos' && ( github.event_name == 'push' ||  github.event_name == 'schedule' ) }}
+          provenance: false
+
+  merge-docker-manifest:
+    runs-on: ubuntu-latest
+    needs: CI
+    strategy:
+        matrix:
+          config:
+            - {dockerfile: 'fedora',   tag: 'latest'}
+            - {dockerfile: 'fedora',   tag: 'rawhide', continue-on-error: 'true'}
+            - {dockerfile: 'ubuntu',   tag: 'latest'}
+    continue-on-error: ${{ matrix.config.continue-on-error == 'true' }}
+    env:
+      docker-tag: ghcr.io/kokkos/ci-containers/${{ matrix.config.dockerfile }}:${{ matrix.config.tag }}
+    steps:
+      - name: Login to Github Container Registry
+        if: github.repository_owner == 'kokkos' && ( github.event_name == 'push' ||  github.event_name == 'schedule' )
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create and push manifest images to Github Container Registry
+        if: github.repository_owner == 'kokkos' && ( github.event_name == 'push' ||  github.event_name == 'schedule' )
+        uses: Noelware/docker-manifest-action@0.4.3
+        with:
+          inputs: ${{ env.docker-tag }}
+          images: ${{ env.docker-tag }}-amd64,${{ env.docker-tag }}-arm64
+          push: ${{ github.repository_owner == 'kokkos' && ( github.event_name == 'push' ||  github.event_name == 'schedule' ) }}
