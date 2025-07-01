@@ -359,6 +359,11 @@ std::vector<ExecSpace> partition_space(ExecSpace const& base_instance,
 // implementation of the RAII wrapper is using Kokkos::single.
 #include <Kokkos_AcquireUniqueTokenImpl.hpp>
 
+// ECAN-style attention allocation for agentic kernels
+#include <Kokkos_AttentionAllocation.hpp>
+#include <Kokkos_AgenticKernel.hpp>
+#include <Kokkos_AttentionAwareParallelImpl.hpp>
+
 //----------------------------------------------------------------------------
 // Redefinition of the macros min and max if we pushed them at entry of
 // Kokkos_Core.hpp

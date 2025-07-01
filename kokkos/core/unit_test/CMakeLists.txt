@@ -258,6 +258,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         TeamTeamSize
         TeamVectorRange
         UniqueToken
+        AttentionAllocation
         View_64bit
         ViewAPI_a
         ViewAPI_b
