@@ -146,6 +146,19 @@ void modifyDualView(const std::string& label, const void* const ptr,
                     bool on_device);
 
 void declareMetadata(const std::string& key, const std::string& value);
+
+// Meta-cognitive monitoring integration
+namespace MetaCognitive {
+  void initializeMonitoring();
+  void finalizeMonitoring();
+  void enableAdaptiveOptimization(bool enable = true);
+  uint32_t registerExecutionContext(const std::string& name);
+  void recordResourceUsage(uint32_t context_id, uint64_t memory_bytes, 
+                          uint32_t threads, double execution_time);
+  double getSystemEfficiency();
+  void performGlobalOptimization();
+}
+
 void initialize(
     const std::string& = {});  // should rename to impl_initialize ASAP
 void initialize(const Kokkos::Tools::InitArguments&);
