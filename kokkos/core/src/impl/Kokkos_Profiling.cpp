@@ -26,6 +26,7 @@
 #include <impl/Kokkos_Profiling.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
+#include <impl/Kokkos_MetaCognitiveMonitor.hpp>
 
 #if defined(KOKKOS_ENABLE_LIBDL) || defined(KOKKOS_TOOLS_INDEPENDENT_BUILD)
 #include <dlfcn.h>
@@ -1221,6 +1222,83 @@ void declare_optimization_goal(const size_t context,
 #endif
 }
 }  // end namespace Experimental
+
+// Meta-cognitive monitoring integration
+namespace MetaCognitive {
+
+void initializeMonitoring() {
+#ifdef KOKKOS_ENABLE_TOOLS
+  Experimental::initializeMetaCognitiveMonitoring();
+#endif
+}
+
+void finalizeMonitoring() {
+#ifdef KOKKOS_ENABLE_TOOLS
+  Experimental::finalizeMetaCognitiveMonitoring();
+#endif
+}
+
+void enableAdaptiveOptimization(bool enable) {
+#ifdef KOKKOS_ENABLE_TOOLS
+  // Enable or disable adaptive optimization
+  if (enable) {
+    auto& introspector = Experimental::getGlobalIntrospector();
+    introspector.performGlobalIntrospection();
+  }
+#else
+  (void)enable;
+#endif
+}
+
+uint32_t registerExecutionContext(const std::string& name) {
+#ifdef KOKKOS_ENABLE_TOOLS
+  auto& introspector = Experimental::getGlobalIntrospector();
+  return introspector.registerAgent(name);
+#else
+  (void)name;
+  return 0;
+#endif
+}
+
+void recordResourceUsage(uint32_t context_id, uint64_t memory_bytes, 
+                        uint32_t threads, double execution_time) {
+#ifdef KOKKOS_ENABLE_TOOLS
+  auto& introspector = Experimental::getGlobalIntrospector();
+  auto* agent = introspector.getAgent(context_id);
+  if (agent) {
+    agent->recordMemoryUsage(memory_bytes);
+    agent->recordParallelRegion(threads);
+    if (execution_time > 0) {
+      agent->recordKernelExecution(context_id, execution_time);
+    }
+  }
+#else
+  (void)context_id;
+  (void)memory_bytes;
+  (void)threads;
+  (void)execution_time;
+#endif
+}
+
+double getSystemEfficiency() {
+#ifdef KOKKOS_ENABLE_TOOLS
+  auto& introspector = Experimental::getGlobalIntrospector();
+  return introspector.calculateSystemEfficiency();
+#else
+  return 1.0;
+#endif
+}
+
+void performGlobalOptimization() {
+#ifdef KOKKOS_ENABLE_TOOLS
+  auto& introspector = Experimental::getGlobalIntrospector();
+  introspector.performGlobalIntrospection();
+  introspector.applyAdaptiveFeedback();
+#endif
+}
+
+} // namespace MetaCognitive
+
 }  // end namespace Tools
 
 }  // end namespace Kokkos
