@@ -1,0 +1,1 @@
+kp_add_library(kp_kokkos_sampler kp_sampler_skip.cpp)
